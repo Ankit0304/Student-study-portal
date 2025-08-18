@@ -17,6 +17,7 @@ urlpatterns = [
     path('books/', views.books, name='books'),
     path('dictionary/', views.dictionary, name='dictionary'),
     path('wiki/', views.wiki, name='wiki'),
+    path("notes/<int:note_id>/export/", views.export_note_pdf, name="export_note_pdf"),
     # path('register/', views.register, name='register'),
     
 ]

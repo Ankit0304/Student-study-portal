@@ -19,13 +19,19 @@ from django.urls import path
 from django.urls.conf import include
 from dashboard import views as dash_views
 from django.contrib.auth import views as auth_views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('dashboard.urls')), 
+    #  path('accounts/', include('allauth.urls')),
+    path("ckeditor/", include("ckeditor_uploader.urls")),
     path('register/', dash_views.register, name='register'),
-    path('login/', auth_views.LoginView.as_view(template_name='dashboard/login.html'), name='login'),
+    path('login/', auth_views.LoginView.as_view(template_name='dashboard/accounts/login.html'), name='login'),
     path('profile/', dash_views.profile, name='profile'),
-    path('logout/', auth_views.LogoutView.as_view(template_name='dashboard/logout.html'), name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(template_name='dashboard/accounts/logout.html'), name='logout'),
      
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

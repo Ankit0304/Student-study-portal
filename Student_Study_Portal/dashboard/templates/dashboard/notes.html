@@ -23,12 +23,12 @@
 </div>
 <br><br>
 <div class="container">
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         <fieldset class="form-group">
             <legend class="border-bottom mb-4">Create Notes</legend>
         </fieldset>
-        
+        {{ form.media }}
         {{form |crispy}}
         <div class="form-group">
             <button href="" class="btn btn-outline-info" type="submit">

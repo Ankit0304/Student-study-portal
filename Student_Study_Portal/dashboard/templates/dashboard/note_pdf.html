@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{{ note.title }}</title>
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; margin: 30px; }
+        h1 { text-align: center; color: #333; }
+        p { font-size: 14px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <h1>{{ note.title }}</h1>
+    <hr>
+    <div>
+        {{ note.description|safe }}
+    </div>
+
+    {% if note.attachment %}
+        <p><b>Attachment:</b> {{ note.attachment.url }}</p>
+    {% endif %}
+</body>
+</html>

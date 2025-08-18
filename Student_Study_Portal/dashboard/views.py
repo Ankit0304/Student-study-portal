@@ -16,9 +16,9 @@ def home(request):
 def notes(request):
     if request.method == 'POST':
         
-        form = NoteForm(request.POST)
+        form = NoteForm(request.POST, request.FILES)
         if form.is_valid():
-            notes = Note(user = request.user, title = request.POST['title'], description = request.POST['description'])
+            notes = Note(user = request.user, title = form.cleaned_data['title'], description = form.cleaned_data['description'], attachment = form.cleaned_data['attachment'])
             notes.save()
         messages.success(request, 'Note created successfully!')
         return redirect('notes')
@@ -284,7 +284,7 @@ def register(request):
     context = {
         'form': form
     }
-    return render(request, 'dashboard/register.html', context)
+    return render(request, 'dashboard/accounts/register.html', context)
 
 @login_required
 def profile(request):
@@ -306,3 +306,19 @@ def profile(request):
     }
     
     return render(request, 'dashboard/profile.html', context)
+
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
+from .models import Note
+
+@login_required
+def export_note_pdf(request, note_id):
+    note = Note.objects.get(id=note_id, user=request.user)
+    html = render_to_string("dashboard/note_pdf.html", {"note": note})
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{note.title}.pdf"'
+    pisa.CreatePDF(html, dest=response)
+
+    return response

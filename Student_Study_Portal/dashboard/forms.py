@@ -4,7 +4,7 @@ from django.contrib.auth.forms import User, UserCreationForm
 class NoteForm(forms.ModelForm):
     class Meta :
         model = Note
-        fields = ['title', 'description']
+        fields = ['title', 'description', 'attachment']
         
 class DateInput(forms.DateInput):
     input_type = 'date'
