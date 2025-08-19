@@ -1,62 +1,59 @@
-{% extends 'dashboard/base.html' %} 
-{% load static %} 
+{% extends 'dashboard/base.html' %}
+{% load static %}
 {% block content %}
 
-<section class='text-center container'>
+<section class="text-center container">
     <h2>Search books and browse your favorite</h2>
-    <p>just enter the search query to obtain the results</p><b></b>
-    <form action="" method="post">
+    <p>Just enter the search query to obtain the results</p>
+    
+    <!-- Search Form -->
+    <form action="" method="post" class="mb-4">
         {% csrf_token %}
-        {{form}}
+        {{ form }}
         <input class="btn btn-danger" type="submit" value="Submit">
-    </form><br>
-    {% for result in result_list %}
-    <a href="{{result.preview}}" target="_blank">
-        <div class="card">
-            <div class="card-header">
-                <div class="row">
-                    <div class="col-md-3">
-                        <img class="img-fluid" src="{{result.thumbnail}}" alt="">
+    </form>
 
-                    </div>
-                    <div class="col-md-9">
-                        <h3 class="p-0 m-0">{{result.title}}</h3>
-                        <b>
-                            <u>
-                                <h5 class="p-0 m-0">{{result.subtitle}}</h5>
-                            </u>
-                        </b>
-                        {% if result.description %}
-                        <h6 class="p-0 m-1">{{result.description}}</h6>
-                        {% endif %}
-                        
-                        <b> 
-                            {% if result.category %}
-                            <h6 class="ml-0 mt-3">Category:
-                                {% for cotegory in result.category %}
-                                    {{category}}
-                                {% endfor %}
-                            </h6>
-                            {% endif %}
-                            {% if result.count %}
-                            <h6 class="ml-0 mt-1">Pages: 
-                                {{result.count}}
-                            </h6>
-                            {% endif %}
-                            {% if result.rating %}
-                            <h6 class="ml-0 mt-1">Rating:
-                                {{result.rating }}
-                            </h6>
-                            {% endif %}
-                        </b>
-                        {% comment %} {% endif %} {% endcomment %}
-                    </div>
-                </div>
+    <!-- Books Results -->
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for item in result_list %}
+        <div class="col">
+          <div class="card h-100 shadow-sm">
+            
+            {% if item.thumbnail %}
+              <img src="{{ item.thumbnail }}" class="card-img-top" alt="{{ item.title }}">
+            {% endif %}
+            
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">{{ item.title }}</h5>
+              
+              {% if item.subtitle %}
+                <p class="card-text">{{ item.subtitle }}</p>
+              {% endif %}
+              
+              <p class="small text-muted">{{ item.category }}</p>
+              <p class="small">Pages: {{ item.count }}</p>
+              <p class="small">Rating: {{ item.rating }}</p>
+              
+              <div class="mt-auto">
+                {% if item.preview %}
+                  <a href="{{ item.preview }}" target="_blank" class="btn btn-sm btn-secondary">Preview</a>
+                {% endif %}
+                
+                <!-- Add to Bookshelf Form -->
+                <form class="d-inline" method="POST" action="{% url 'add_to_bookshelf' %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="title" value="{{ item.title }}">
+                  <input type="hidden" name="author" value="{{ item.author|default_if_none:'' }}">
+                  <input type="hidden" name="cover_image" value="{{ item.thumbnail }}">
+                  <input type="hidden" name="total_pages" value="{{ item.count|default:0 }}">
+                  <button type="submit" class="btn btn-sm btn-primary">Add to Bookshelf</button>
+                </form>
+              </div>
             </div>
+          </div>
         </div>
-    </a>
-    {% endfor %}
-    <br>
+        {% endfor %}
+    </div>
 </section>
 
 {% endblock content %}

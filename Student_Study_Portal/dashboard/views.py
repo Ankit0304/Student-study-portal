@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import *
 from .forms import *
@@ -7,6 +7,8 @@ from youtubesearchpython import VideosSearch
 import requests
 import wikipedia
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+
 
 # Create your views here.
 def home(request):
@@ -322,3 +324,85 @@ def export_note_pdf(request, note_id):
     pisa.CreatePDF(html, dest=response)
 
     return response
+
+
+@login_required
+@require_POST
+def add_to_bookshelf(request):
+    form = AddToBookshelfForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Invalid book data.")
+        return redirect("books")
+
+    title = form.cleaned_data["title"]
+    author = form.cleaned_data.get("author") or ""
+    cover = form.cleaned_data.get("cover_image") or ""
+    total_pages = form.cleaned_data.get("total_pages") or 0
+
+    # Avoid duplicates by (title, author). You can later switch to Google volume ID for precision.
+    book, _ = Book.objects.get_or_create(
+        title=title.strip(),
+        author=author.strip(),
+        defaults={"cover_image": cover, "total_pages": total_pages},
+    )
+    # If the book existed, consider updating missing fields:
+    if not book.cover_image and cover:
+        book.cover_image = cover
+    if (book.total_pages or 0) == 0 and total_pages:
+        book.total_pages = total_pages
+    book.save()
+
+    progress, created = ReadingProgress.objects.get_or_create(user=request.user, book=book)
+    if created:
+        messages.success(request, f'"{book.title}" added to your bookshelf.')
+    else:
+        messages.info(request, f'"{book.title}" is already in your bookshelf.')
+
+    return redirect("my_bookshelf")
+
+
+@login_required
+def my_bookshelf(request):
+    # List all books saved by the user with progress info
+    progresses = (
+        ReadingProgress.objects
+        .filter(user=request.user)
+        .select_related("book")
+        .order_by("finished", "book__title")
+    )
+    return render(request, "dashboard/my_bookshelf.html", {"progresses": progresses})
+
+
+@login_required
+# @require_POST
+def update_reading_progress(request, pk):
+    rp = get_object_or_404(ReadingProgress, pk=pk, user=request.user)
+    form = ReadingProgressForm(request.POST, instance=rp)
+    if form.is_valid():
+        obj = form.save(commit=False)
+
+        # Add minutes instead of overwriting time_spent
+        add_minutes = form.cleaned_data.get("time_spent") or 0
+        obj.time_spent = (rp.time_spent or 0) + add_minutes
+
+        # Auto-finish if current_page >= total_pages
+        total = rp.book.total_pages or 0
+        if total and (obj.current_page or 0) >= total:
+            obj.current_page = total
+            obj.finished = True
+
+        obj.save()
+        messages.success(request, "Reading progress updated.")
+    else:
+        messages.error(request, "Please fix the errors in the form.")
+
+    return redirect("my_bookshelf")
+
+
+@login_required
+def remove_from_bookshelf(request, pk):
+    rp = get_object_or_404(ReadingProgress, pk=pk, user=request.user)
+    title = rp.book.title
+    rp.delete()
+    messages.info(request, f'"{title}" removed from your bookshelf.')
+    return redirect("my_bookshelf")

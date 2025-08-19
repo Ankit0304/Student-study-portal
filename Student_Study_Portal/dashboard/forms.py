@@ -30,4 +30,19 @@ class RegisterationForm(UserCreationForm):
         model = User
         fields = ['username', 'password1', 'password2']
     
+class AddToBookshelfForm(forms.Form):
+    title = forms.CharField(widget=forms.HiddenInput)
+    author = forms.CharField(required=False, widget=forms.HiddenInput)
+    cover_image = forms.URLField(required=False, widget=forms.HiddenInput)
+    total_pages = forms.IntegerField(required=False, min_value=0, widget=forms.HiddenInput)
+
+
+# Used to update reading progress for a saved book
+class ReadingProgressForm(forms.ModelForm):
+    # We’ll treat time_spent as “minutes to add” when updating
+    time_spent = forms.IntegerField(min_value=0, required=False, initial=0, help_text="Minutes to add")
+
+    class Meta:
+        model = ReadingProgress
+        fields = ["current_page", "time_spent", "finished"]
     

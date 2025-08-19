@@ -34,4 +34,25 @@ class Todo(models.Model):
     def __str__(self):
         return self.title
      
-    
+class Book(models.Model):
+    title = models.CharField(max_length=255)
+    author = models.CharField(max_length=255, blank=True, null=True)
+    cover_image = models.URLField(blank=True, null=True)  # from Google Books API
+    total_pages = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.title
+
+class ReadingProgress(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    current_page = models.IntegerField(default=0)
+    time_spent = models.IntegerField(default=0)  # minutes
+    finished = models.BooleanField(default=False)
+
+    @property
+    def progress_percent(self):
+        total = self.book.total_pages or 0
+        if total > 0:
+            return int((self.current_page / total) * 100)
+        return 0

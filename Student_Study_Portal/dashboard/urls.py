@@ -19,5 +19,9 @@ urlpatterns = [
     path('wiki/', views.wiki, name='wiki'),
     path("notes/<int:note_id>/export/", views.export_note_pdf, name="export_note_pdf"),
     # path('register/', views.register, name='register'),
+    path("bookshelf/", views.my_bookshelf, name="my_bookshelf"),
+    path("bookshelf/add/", views.add_to_bookshelf, name="add_to_bookshelf"),
+    path("bookshelf/<int:pk>/update/", views.update_reading_progress, name="update_reading_progress"),
+    path("bookshelf/<int:pk>/remove/", views.remove_from_bookshelf, name="remove_from_bookshelf"),
     
 ]
