@@ -4,17 +4,17 @@ from ckeditor_uploader.fields import RichTextUploadingField
 # Create your models here.
 class Note(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=200 )
     description = RichTextUploadingField() 
     attachment = models.FileField(upload_to="pdfs/", blank=True, null=True)  # for PDF, images, slides
-    
+    is_deleted = models.BooleanField(default=False)
+
     def __str__(self):
         return self.title
     
     class Meta :
         verbose_name = 'Note'
-        verbose_name_plural = 'Note'
-    
+        verbose_name_plural = 'Note'  
 class Homework(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     subject = models.CharField(max_length=50)

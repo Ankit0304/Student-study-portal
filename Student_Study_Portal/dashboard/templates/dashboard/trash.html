@@ -1,0 +1,43 @@
+{% extends 'dashboard/base.html' %}
+{% block content %}
+
+<div class="container my-4">
+  <h2>Trash Bin</h2>
+  <a href="{% url 'notes' %}" class="btn btn-outline-primary btn-sm float-end">Back to Notes</a>
+  <hr>
+
+  <div class="row">
+    {% for note in notes %}
+      <div class="col-md-4">
+        <div class="card mb-3 border-danger">
+          <div class="card-body">
+            <h5 class="card-title">{{ note.title }}</h5>
+            <p class="card-text">{{ note.description|truncatechars:100 }}</p>
+
+            {% if note.attachment %}
+              <a href="{{ note.attachment.url }}" target="_blank">📎 Attachment</a><br>
+            {% endif %}
+
+            <div class="d-flex gap-2 mt-2">
+              <!-- Restore -->
+              <form method="post" action="{% url 'restore_note' note.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-success">Restore</button>
+              </form>
+
+              <!-- Delete Forever -->
+              <form method="post" action="{% url 'delete_forever' note.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-danger">Delete Forever</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p>Trash is empty.</p>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

@@ -8,10 +8,18 @@
         <div class="col-md-3">
             <a href="{% url 'note_detail' note.id %}">
                 <div class="card">
-                    <div class="card-header">{{note.title}}</div>
+                    <div class="card-header">{{note.title | upper}}</div>
                     <div class="card-body">{{note.description|slice:"0:50"}}</div>
-                    <div class="card-footer mt-auto "><a href="{% url 'delete_note' note.id %}">
-                        <i class="fa fa-trash fa-2x"></i></a>
+                    <div class="card-footer mt-auto">
+                        <form method="post" action="{% url 'delete_note' note.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-link p-0">
+                                <i class="fa fa-trash fa-1x btn text-danger">Delete</i>
+                            </button>
+                            <a href="{% url 'update_note' note.id %}" class="btn btn-link p-0">
+                                <i class="fa fa-edit fa-1x btn text-primary">Update</i>
+                            </a>
+                        </form>
                     </div>
                 </div>
             </a>

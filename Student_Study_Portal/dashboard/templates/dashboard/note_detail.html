@@ -7,26 +7,31 @@
     <div class="container">
 
         <div class="content-section p-0 mt-5">
-
             <div class="m-3">
-                <h2>{{note.title}}</h2>
+                <h2>{{note.title | upper}}</h2>
             </div>
 
             <hr class="p-0 m-0">
-            <p class="description m-5 p-5">
+            <p class="description m-3 ">
                 {{note.description|safe}}
             </p>
             <hr>
             {% if note.attachment %}
             <p class="mt-3">
-                <b>Attachment:</b>
-                <a href="{{ note.attachment.url }}" target="_blank">View / Download</a>
+                <img src="{{ note.attachment.url }}" alt="Attachment" class="img-fluid">
+                <br>
+                <a href="{{ note.attachment.url }}" target="_blank" class="btn btn-primary">Download Image</a>
             </p>
             {% endif %}
         </div>
         <hr>
+        <a href="{% url 'update_note' note.id %}" class="btn btn-link p-0">
+            <i class="fa fa-edit fa-1x btn text-primary">Update Note</i>
+        </a>
+        <br>
+        <br>
         <a class="btn btn-success" href="{% url 'export_note_pdf' note.id %}">
-            Download as PDF
+            Download Note as PDF
         </a>
 
         

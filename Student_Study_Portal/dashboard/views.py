@@ -17,7 +17,6 @@ def home(request):
 @login_required
 def notes(request):
     if request.method == 'POST':
-        
         form = NoteForm(request.POST, request.FILES)
         if form.is_valid():
             notes = Note(user = request.user, title = form.cleaned_data['title'], description = form.cleaned_data['description'], attachment = form.cleaned_data['attachment'])
@@ -26,7 +25,7 @@ def notes(request):
         return redirect('notes')
     else:
         form = NoteForm()
-    notes = Note.objects.filter(user=request.user)
+    notes = Note.objects.filter(user=request.user, is_deleted=False)
     context = {
             'notes': notes,
             'form': form
@@ -34,8 +33,40 @@ def notes(request):
     return render(request, 'dashboard/notes.html', context)
 # @login_required
 def delete_note(request, pk=None):
-    Note.objects.get(id=pk).delete()
+    note = get_object_or_404(Note, id=pk, user=request.user)
+    note.is_deleted = True  # Soft delete
+    note.save()
+    # Note.objects.get(id=pk).delete()
     return redirect("notes")
+
+def trash_notes(request):
+    trashed = Note.objects.filter(user=request.user, is_deleted=True)
+    return render(request, 'dashboard/trash.html', {'notes': trashed})
+
+def restore_note(request, pk):
+    note = get_object_or_404(Note, id=pk, user=request.user, is_deleted=True)
+    note.is_deleted = False
+    note.save()
+    return redirect('trash_notes')
+
+def delete_forever(request, pk):
+    note = get_object_or_404(Note, id=pk, user=request.user, is_deleted=True)
+    note.delete()
+    return redirect('trash_notes')
+
+def update_note(request, pk):
+    note = get_object_or_404(Note, pk=pk, user=request.user)  # only allow editing own notes
+    if request.method == 'POST':
+        form = NoteForm(request.POST, request.FILES, instance=note)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Note updated successfully!')
+            return redirect('notes')
+    else:
+        form = NoteForm(instance=note)
+
+    return render(request, 'dashboard/update_note.html', {'form': form, 'note': note})
+
 # @login_required 
 class notes_detail(generic.DetailView):
     model = Note
